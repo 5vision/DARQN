@@ -1,0 +1,55 @@
+#!/bin/bash
+
+ENV=$1
+FRAMEWORK="alewrap"
+env_params="useRGB=true,display=false"
+game_path=$PWD"/roms/"
+
+if [ $2 == "test" ]; then
+	netfile="\"exp07_"$1".t7\""
+	replay_memory=1
+else
+	netfile="\"convnet_atari3\""
+	replay_memory=500000
+fi
+
+update_freq=4
+discount=0.99
+learn_start=25000
+eps_end=0.1
+lr=0.001
+lr_end=0.00025
+state_dim=7056
+ncols=1
+n_replay=1
+rnn_size=256
+attention="\"hard\""
+preproc="\"net_downsample_2x_full_y\""
+agent_params="rnn_size="$rnn_size",attention="$attention",lr="$lr",lr_end="$lr_end",ep=1,ep_end="$eps_end",discount="$discount",hist_len=4,learn_start="$learn_start",replay_memory="$replay_memory",update_freq="$update_freq",n_replay="$n_replay",network="$netfile",preproc="$preproc",state_dim="$state_dim",minibatch_size=32,rescale_r=1,ncols="$ncols",bufferSize=512,valid_size=500,target_q=10000,clip_delta=1,min_reward=-1,max_reward=1"
+
+steps=5000000
+eval_freq=50000
+eval_steps=25000
+prog_freq=5000
+save_freq=50000
+gpu=0
+random_starts=30
+pool_frms_type="\"max\""
+pool_frms_size=2
+pool_frms="type="$pool_frms_type",size="$pool_frms_size
+num_threads=4
+seed=1
+actrep=4
+agent="NeuralQLearner"
+agent_name="exp07_"$1
+
+args="-framework $FRAMEWORK -game_path $game_path -name $agent_name -env $ENV -env_params $env_params -agent $agent -agent_params $agent_params -steps $steps -eval_freq $eval_freq -eval_steps $eval_steps -prog_freq $prog_freq -save_freq $save_freq -actrep $actrep -gpu $gpu -random_starts $random_starts -pool_frms $pool_frms -seed $seed -threads $num_threads"
+echo $args
+
+cd darqn_hard 
+
+if [ $2 == "test" ]; then
+	th test_agent.lua $args
+else
+	th train_agent.lua $args
+fi
